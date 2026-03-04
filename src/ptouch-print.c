@@ -50,6 +50,7 @@ struct arguments {
 	bool info;
 	char *font_file;
 	int font_size;
+	int font_margin;
 	int forced_tape_width;
 	char *save_png;
 	int verbose;
@@ -88,11 +89,12 @@ static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "options:", 1},
 	{ "debug", 1, 0, 0, "Enable debug output", 1},
 	{ "font", 2, "<file>", 0, "Use font <file> or <name>", 1},
-	{ "fontsize", 3, "<size>", 0, "Manually set font size", 1},
-	{ "writepng", 4, "<file>", 0, "Instead of printing, write output to png <file>", 1},
-	{ "force-tape-width", 5, "<px>", 0, "Set tape width in pixels, use together with --writepng without a printer connected", 1},
-	{ "copies", 6, "<number>", 0, "Sets the number of identical prints", 1},
-	{ "timeout", 7, "<seconds>", 0, "Set timeout waiting for finishing previous job. Default:1, 0 means infinity", 1},
+	{ "fontsize", 3, "<size>", 0, "Manually set font size, or ...", 1},
+	{ "fontmargin", 4, "<size>", 0, "Manually set font top/bottom margin (in px)", 1},
+	{ "writepng", 5, "<file>", 0, "Instead of printing, write output to png <file>", 1},
+	{ "force-tape-width", 6, "<px>", 0, "Set tape width in pixels, use together with --writepng without a printer connected", 1},
+	{ "copies", 7, "<number>", 0, "Sets the number of identical prints", 1},
+	{ "timeout", 8, "<seconds>", 0, "Set timeout waiting for finishing previous job. Default:1, 0 means infinity", 1},
 
 	{ 0, 0, 0, 0, "print commands:", 2},
 	{ "image", 'i', "<file>", 0, "Print the given image which must be a 2 color (black/white) png", 2},
@@ -351,9 +353,12 @@ gdImage *render_text(char *font, char *line[], int lines, int print_width)
 	if (arguments.font_size > 0) {
 		fsz = arguments.font_size;
 		printf(_("setting font size=%i\n"), fsz);
+		if (arguments.font_margin > 0) {
+			printf(_("ignoring setting font margin=%i\n"), arguments.font_margin);
+		}
 	} else {
 		for (i = 0; i < lines; ++i) {
-			if ((tmp = find_fontsize(print_width/lines, font, line[i])) < 0) {
+			if ((tmp = find_fontsize((print_width-2*arguments.font_margin)/lines, font, line[i])) < 0) {
 				printf(_("could not estimate needed font size\n"));
 				return NULL;
 			}
@@ -593,16 +598,18 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 3: // fontsize
 			arguments->font_size = strtol(arg, NULL, 10);
 			break;
-		case 4: // writepng
+		case 4: // fontmargin
+			arguments->font_margin = strtol(arg, NULL, 10);
+		case 5: // writepng
 			arguments->save_png = arg;
 			break;
-		case 5: // force-tape-width
+		case 6: // force-tape-width
 			arguments->forced_tape_width = strtol(arg, NULL, 10);
 			break;
-		case 6: // copies
+		case 7: // copies
 			arguments->copies = strtol(arg, NULL, 10);
 			break;
-		case 7: // timeout
+		case 8: // timeout
 			arguments->timeout = strtol(arg, NULL, 10);
 			break;
 		case 'i': // image
