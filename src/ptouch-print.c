@@ -277,16 +277,16 @@ int get_baselineoffset(char *text, char *font, int fsz)
 {
 	int brect[8];
 
-	/* NOTE: This assumes that 'o' is always on the baseline */
-	gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, "o");
-	int o_offset = brect[1];
+	/* NOTE: This assumes that 'z' is always on the baseline */
+	gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, "z");
+	int z_offset = brect[1];
 	gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text);
 	int text_offset = brect[1];
 	if (arguments.debug) {
-		printf(_("debug: o baseline offset - %d\n"), o_offset);
+		printf(_("debug: z baseline offset - %d\n"), z_offset);
 		printf(_("debug: text baseline offset - %d\n"), text_offset);
 	}
-	return text_offset-o_offset;
+	return text_offset-z_offset;
 }
 
 /* --------------------------------------------------------------------
