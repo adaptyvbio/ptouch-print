@@ -286,6 +286,7 @@ int write_png(gdImage *im, const char *file)
 	gdImageSetResolution(im, 180, 180);
 	gdImagePng(im, f);
 	fclose(f);
+	printf(_("printing '%s' requires %.1f mm of tape\n"), file, (float)gdImageSX(im) / gdImageResolutionX(im) * 25.4);
 	return 0;
 }
 
