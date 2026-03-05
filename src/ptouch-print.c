@@ -133,6 +133,23 @@ struct arguments arguments = {
 job_t *jobs = NULL;
 job_t *last_added_job = NULL;
 
+
+/* --------------------------------------------------------------------
+   -------------------------------------------------------------------- */
+
+char * gdImageStringFT_180dpi(gdImagePtr im, int *brect, int fg, char *fontlist, double ptsize, double angle, int x, int y, char *string)
+{
+	gdFTStringExtra extra;
+	memset(&extra, 0, sizeof(gdFTStringExtra));
+
+	extra.flags = gdFTEX_RESOLUTION;
+	extra.hdpi = 180;
+	extra.vdpi = 180;
+
+	return gdImageStringFTEx(im, brect, fg, fontlist, ptsize, angle, x, y, string, &extra);
+}
+
+
 /* --------------------------------------------------------------------
    -------------------------------------------------------------------- */
 
@@ -280,9 +297,9 @@ int get_baselineoffset(char *text, char *font, int fsz)
 	int brect[8];
 
 	/* NOTE: This assumes that 'z' is always on the baseline */
-	gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, "z");
+	gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, "z");
 	int z_offset = brect[1];
-	gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text);
+	gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text);
 	int text_offset = brect[1];
 	if (arguments.debug) {
 		printf(_("debug: z baseline offset - %d\n"), z_offset);
@@ -313,7 +330,7 @@ int find_fontsize(int want_px, char *font, char *text)
 	int brect[8];
 
 	for (int i=4; ; ++i) {
-		if (gdImageStringFT(NULL, &brect[0], -1, font, i, 0.0, 0, 0, combined_text) != NULL) {
+		if (gdImageStringFT_180dpi(NULL, &brect[0], -1, font, i, 0.0, 0, 0, combined_text) != NULL) {
 			break;
 		}
 		if (brect[1]-brect[5] <= want_px) {
@@ -335,7 +352,7 @@ int needed_width(char *text, char *font, int fsz)
 {
 	int brect[8];
 
-	if (gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text) != NULL) {
+	if (gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text) != NULL) {
 		return -1;
 	}
 	return brect[2]-brect[0];
@@ -345,7 +362,7 @@ int offset_x(char *text, char *font, int fsz)
 {
 	int brect[8];
 
-	if (gdImageStringFT(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text) != NULL) {
+	if (gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text) != NULL) {
 		return -1;
 	}
 	return -brect[0];
@@ -391,12 +408,12 @@ gdImage *render_text(char *font, char *line[], int lines, int print_width)
 	im = gdImageCreatePalette(x, print_width);
 	gdImageColorAllocate(im, 255, 255, 255);
 	black = gdImageColorAllocate(im, 0, 0, 0);
-	/* gdImageStringFT(im,brect,fg,fontlist,size,angle,x,y,string) */
+	/* gdImageStringFT_180dpi(im,brect,fg,fontlist,size,angle,x,y,string) */
 	/* find max needed line height for ALL lines */
 	int max_height=0;
 	for (i = 0; i < lines; ++i) {
-		if ((p = gdImageStringFT(NULL, &brect[0], -black, font, fsz, 0.0, 0, 0, line[i])) != NULL) {
-			printf(_("error in gdImageStringFT: %s\n"), p);
+		if ((p = gdImageStringFT_180dpi(NULL, &brect[0], -black, font, fsz, 0.0, 0, 0, line[i])) != NULL) {
+			printf(_("error in gdImageStringFT_180dpi: %s\n"), p);
 		}
 		//int ofs = get_baselineoffset(line[i], font_file, fsz);
 		int lineheight = brect[1]-brect[5];
@@ -429,8 +446,8 @@ gdImage *render_text(char *font, char *line[], int lines, int print_width)
 		} else if (arguments.align == ALIGN_RIGHT) {
 			align_ofs = x - needed_width(line[i], arguments.font_file, fsz);
 		}
-		if ((p = gdImageStringFT(im, &brect[0], -black, font, fsz, 0.0, off_x + align_ofs, pos, line[i])) != NULL) {
-			printf(_("error in gdImageStringFT: %s\n"), p);
+		if ((p = gdImageStringFT_180dpi(im, &brect[0], -black, font, fsz, 0.0, off_x + align_ofs, pos, line[i])) != NULL) {
+			printf(_("error in gdImageStringFT_180dpi: %s\n"), p);
 		}
 	}
 	return im;
