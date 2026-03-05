@@ -298,11 +298,22 @@ int get_baselineoffset(char *text, char *font, int fsz)
    -------------------------------------------------------------------- */
 int find_fontsize(int want_px, char *font, char *text)
 {
+	// stabilize font size determination by always accounting for common ascenders and descenders
+	const char *common_chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnoprqstuvwxyz{|}~";
+	char *combined_text = (char *)malloc(strlen(text) + strlen(common_chars) + 1);
+	if (!combined_text) {
+		fprintf(stderr, "Memory allocation failed\n");
+		return -1;
+	}
+
+	strcpy(combined_text, text);
+	strcat(combined_text, common_chars);
+
 	int save = 0;
 	int brect[8];
 
 	for (int i=4; ; ++i) {
-		if (gdImageStringFT(NULL, &brect[0], -1, font, i, 0.0, 0, 0, text) != NULL) {
+		if (gdImageStringFT(NULL, &brect[0], -1, font, i, 0.0, 0, 0, combined_text) != NULL) {
 			break;
 		}
 		if (brect[1]-brect[5] <= want_px) {
@@ -311,6 +322,9 @@ int find_fontsize(int want_px, char *font, char *text)
 			break;
 		}
 	}
+
+	free(combined_text);
+
 	if (save == 0) {
 		return -1;
 	}
