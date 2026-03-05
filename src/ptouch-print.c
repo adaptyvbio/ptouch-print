@@ -631,6 +631,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 4: // fontmargin
 			arguments->font_margin = strtol(arg, NULL, 10);
+			break;
 		case 5: // writepng
 			arguments->save_png = arg;
 			break;
