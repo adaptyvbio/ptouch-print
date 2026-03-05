@@ -283,6 +283,7 @@ int write_png(gdImage *im, const char *file)
 		printf(_("writing image '%s' failed\n"), file);
 		return -1;
 	}
+	gdImageSetResolution(im, 180, 180);
 	gdImagePng(im, f);
 	fclose(f);
 	return 0;
