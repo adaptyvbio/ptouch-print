@@ -381,6 +381,8 @@ int ptouch_getstatus(ptouch_dev ptdev, int timeout)
 			ptdev->tape_width_px=0;
 			for (i=0; tape_info[i].mm > 0; ++i) {
 				if (tape_info[i].mm == buf[10]) {
+					/* TODO: should be adjusted according
+					   to printer dpi ! */
 					ptdev->tape_width_px=tape_info[i].px;
 				}
 			}
@@ -407,6 +409,33 @@ int ptouch_getstatus(ptouch_dev ptdev, int timeout)
 	}
 	fprintf(stderr, _("got another %i bytes. now try again\n"), tx);
 	return -1;
+}
+
+int ptouch_get_dpi(ptouch_dev ptdev)
+{
+	if (!ptdev) {
+		fprintf(stderr, _("debug: called ptouch_get_dpi() with NULL ptdev\n"));
+		return 0;
+	}
+	return ptdev->devinfo->dpi;
+}
+
+/* TODO: The actual number of maximum lines should be calculated according to
+   printer resolution, tapewidth and fontsize */
+/* printer resolution is planned to be taken into account when calculating
+   tape_width in px */
+int ptouch_get_max_lines(ptouch_dev ptdev, int fontsize_px)
+{
+	if (!ptdev) {
+		fprintf(stderr, _("debug: called ptouch_get_max_lines() with NULL ptdev\n"));
+		return 0;
+	}
+	if (fontsize_px <= 0) {
+		fprintf(stderr, _("debug: called ptouch_get_max_lines() with invalid fontsize_px\n"));
+		return 0;
+	}
+	fprintf(stderr, _("debug: calculated max lines %d \n"), ptdev->tape_width_px / fontsize_px);
+	return 4;
 }
 
 size_t ptouch_get_tape_width(ptouch_dev ptdev)

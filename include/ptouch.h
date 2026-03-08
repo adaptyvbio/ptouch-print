@@ -1,7 +1,7 @@
 /*
 	ptouch-print - Print labels with images or text on a Brother P-Touch
 
-	Copyright (C) 2015-2023 Dominic Radermacher <dominic@familie-radermacher.ch>
+	Copyright (C) 2015-2026 Dominic Radermacher <dominic@familie-radermacher.ch>
 
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License version 3 as
@@ -102,8 +102,10 @@ int ptouch_send(ptouch_dev ptdev, uint8_t *data, size_t len);
 int ptouch_init(ptouch_dev ptdev);
 int ptouch_lf(ptouch_dev ptdev);
 int ptouch_ff(ptouch_dev ptdev);
+int ptouch_get_dpi(ptouch_dev ptdev);
 size_t ptouch_get_max_width(ptouch_dev ptdev);
 size_t ptouch_get_tape_width(ptouch_dev ptdev);
+int ptouch_get_max_lines(ptouch_dev ptdev, int fontsize_px);
 int ptouch_page_flags(ptouch_dev ptdev, uint8_t page_flags);
 int ptouch_finalize(ptouch_dev ptdev, int chain);
 int ptouch_getstatus(ptouch_dev ptdev, int timeout);

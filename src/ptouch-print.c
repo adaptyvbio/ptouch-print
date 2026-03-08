@@ -35,7 +35,7 @@
 
 #define _(s) gettext(s)
 
-#define MAX_LINES 4	/* maybe this should depend on tape size */
+#define MAX_LINES 4	/* this should be calculated depending on tape size */
 
 #define P_NAME "ptouch-print"
 
@@ -56,6 +56,7 @@ struct arguments {
 	int verbose;
 	int timeout;
 };
+
 typedef enum { JOB_CUTMARK, JOB_IMAGE, JOB_PAD, JOB_TEXT, JOB_UNDEFINED } job_type_t;
 
 typedef struct job {
@@ -91,7 +92,8 @@ static struct argp_option options[] = {
 	{ "font", 2, "<file>", 0, "Use font <file> or <name>", 1},
 	{ "fontsize", 3, "<size>", 0, "Manually set font size, or ...", 1},
 	{ "fontmargin", 4, "<size>", 0, "Manually set font top/bottom margin (in px)", 1},
-	{ "writepng", 5, "<file>", 0, "Instead of printing, write output to png <file>", 1},
+	{ "write-png", 5, "<file>", 0, "Instead of printing, write output to png <file>", 1},
+	{ "writepng", 5, "<file>", OPTION_ALIAS, "alias for write-png", 1},
 	{ "force-tape-width", 6, "<px>", 0, "Set tape width in pixels, use together with --writepng without a printer connected", 1},
 	{ "copies", 7, "<number>", 0, "Sets the number of identical prints", 1},
 	{ "timeout", 8, "<seconds>", 0, "Set timeout waiting for finishing previous job. Default:1, 0 means infinity", 1},
@@ -298,7 +300,11 @@ int get_baselineoffset(char *text, char *font, int fsz)
 {
 	int brect[8];
 
-	/* NOTE: This assumes that 'z' is always on the baseline */
+	/* NOTE: This assumes that 'z' is on the baseline for the selected font.
+	   'z' was choosen instead of 'o' because letters withstraight baseline
+	   are the better choice for the majority of fonts here.
+	   If this makes problems with non-latin fonts with lots of vertically
+	   protruding serifs or decorations, change 'z' to 'o' */
 	gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, "z");
 	int z_offset = brect[1];
 	gdImageStringFT_180dpi(NULL, &brect[0], -1, font, fsz, 0.0, 0, 0, text);
@@ -743,6 +749,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (arguments.info) {
+		printf(_("printer has %d dpi\n"), ptouch_get_dpi(ptdev));
 		printf(_("maximum printing width for this printer is %ldpx\n"), ptouch_get_max_width(ptdev));
 		printf(_("maximum printing width for this tape is %ldpx\n"), ptouch_get_tape_width(ptdev));
 		printf("media type = 0x%02x (%s)\n", ptdev->status->media_type, pt_mediatype(ptdev->status->media_type));
