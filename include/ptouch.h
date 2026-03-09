@@ -103,6 +103,7 @@ int ptouch_init(ptouch_dev ptdev);
 int ptouch_lf(ptouch_dev ptdev);
 int ptouch_ff(ptouch_dev ptdev);
 int ptouch_get_dpi(ptouch_dev ptdev);
+int ptouch_calc_tape_px(ptouch_dev ptdev, const uint8_t tape_with_mm);
 size_t ptouch_get_max_width(ptouch_dev ptdev);
 size_t ptouch_get_tape_width(ptouch_dev ptdev);
 int ptouch_get_max_lines(ptouch_dev ptdev, int fontsize_px);

@@ -378,14 +378,7 @@ int ptouch_getstatus(ptouch_dev ptdev, int timeout)
 	if (tx == 32) {
 		if (buf[0]==0x80 && buf[1]==0x20) {
 			memcpy(ptdev->status, buf, 32);
-			ptdev->tape_width_px=0;
-			for (i=0; tape_info[i].mm > 0; ++i) {
-				if (tape_info[i].mm == buf[10]) {
-					/* TODO: should be adjusted according
-					   to printer dpi ! */
-					ptdev->tape_width_px=tape_info[i].px;
-				}
-			}
+			ptdev->tape_width_px = ptouch_calc_tape_px(ptdev, buf[10]);
 			if (ptdev->tape_width_px == 0) {
 				fprintf(stderr, _("unknown tape width of %imm, please report this.\n"), buf[10]);
 			}
@@ -418,6 +411,27 @@ int ptouch_get_dpi(ptouch_dev ptdev)
 		return 0;
 	}
 	return ptdev->devinfo->dpi;
+}
+
+int ptouch_calc_tape_px(ptouch_dev ptdev, const uint8_t tape_width_mm)
+{
+	if (!ptdev) {
+		fprintf(stderr, _("debug: called ptouch_cal_tape_width() with NULL ptdev\n"));
+		return 0;
+	}
+	int tape_width_px = 0;
+	for (int i=0; tape_info[i].mm > 0; ++i) {
+		if (tape_info[i].mm == tape_width_mm) {
+			if (ptdev->devinfo->dpi == 180) {
+				tape_width_px = tape_info[i].px;
+			} else if (ptdev->devinfo->dpi == 360) {
+				tape_width_px = tape_info[i].px * 2;
+			} else {
+				fprintf(stderr, _("printer with %d dpi not supported\n"), ptdev->devinfo->dpi);
+			}
+		}
+	}
+	return tape_width_px;
 }
 
 /* TODO: The actual number of maximum lines should be calculated according to

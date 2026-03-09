@@ -90,10 +90,12 @@ static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "options:", 1},
 	{ "debug", 1, 0, 0, "Enable debug output", 1},
 	{ "font", 2, "<file>", 0, "Use font <file> or <name>", 1},
-	{ "fontsize", 3, "<size>", 0, "Manually set font size, or ...", 1},
-	{ "fontmargin", 4, "<size>", 0, "Manually set font top/bottom margin (in px)", 1},
-	{ "write-png", 5, "<file>", 0, "Instead of printing, write output to png <file>", 1},
-	{ "writepng", 5, "<file>", OPTION_ALIAS, "alias for write-png", 1},
+	{ "font-size", 3, "<size>", 0, "Manually set font size, or ...", 1},
+	{ "fontsize", 3, "<size>", OPTION_ALIAS, "alias for font-size", 1},
+	{ "font-margin", 4, "<size>", 0, "Manually set font top/bottom margin (in px)", 1},
+	{ "fontmargin", 4, "<size>", OPTION_ALIAS, "alias for font-margin", 1},
+	{ "write-png", 'w', "<file>", 0, "Instead of printing, write output to png <file>", 1},
+	{ "writepng", 'w', "<file>", OPTION_ALIAS, "alias for write-png", 1},
 	{ "force-tape-width", 6, "<px>", 0, "Set tape width in pixels, use together with --writepng without a printer connected", 1},
 	{ "copies", 7, "<number>", 0, "Sets the number of identical prints", 1},
 	{ "timeout", 8, "<seconds>", 0, "Set timeout waiting for finishing previous job. Default:1, 0 means infinity", 1},
@@ -285,7 +287,6 @@ int write_png(gdImage *im, const char *file)
 		printf(_("writing image '%s' failed\n"), file);
 		return -1;
 	}
-	gdImageSetResolution(im, 180, 180);
 	gdImagePng(im, f);
 	fclose(f);
 	printf(_("printing '%s' requires %.1f mm of tape\n"), file, (float)gdImageSX(im) / gdImageResolutionX(im) * 25.4);
@@ -640,7 +641,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 4: // fontmargin
 			arguments->font_margin = strtol(arg, NULL, 10);
 			break;
-		case 5: // writepng
+		case 'w': // write-png
 			arguments->save_png = arg;
 			break;
 		case 6: // force-tape-width
@@ -749,8 +750,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (arguments.info) {
-		printf(_("printer has %d dpi\n"), ptouch_get_dpi(ptdev));
-		printf(_("maximum printing width for this printer is %ldpx\n"), ptouch_get_max_width(ptdev));
+		printf(_("printer has %d dpi, maximum printing width is %ld px\n"), ptouch_get_dpi(ptdev), ptouch_get_max_width(ptdev));
 		printf(_("maximum printing width for this tape is %ldpx\n"), ptouch_get_tape_width(ptdev));
 		printf("media type = 0x%02x (%s)\n", ptdev->status->media_type, pt_mediatype(ptdev->status->media_type));
 		printf("media width = %d mm\n", ptdev->status->media_width);
@@ -819,6 +819,8 @@ int main(int argc, char *argv[])
 
 	if (out) {
 		if (arguments.save_png) {
+			int dpi = ptouch_get_dpi(ptdev);
+			gdImageSetResolution(out, dpi, dpi);
 			write_png(out, arguments.save_png);
 		} else {
 			for (int i = 0; i < arguments.copies; ++i) {
