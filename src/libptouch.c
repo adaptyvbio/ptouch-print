@@ -200,6 +200,12 @@ int ptouch_send(ptouch_dev ptdev, uint8_t *data, size_t len)
 	if (len > 128) {
 		return -1;
 	}
+	if (getenv("PTOUCH_TRACE")) {
+		fprintf(stderr, "TX[%zu]:", len);
+		for (size_t i = 0; i < len && i < 32; ++i) fprintf(stderr, " %02x", data[i]);
+		if (len > 32) fprintf(stderr, " ...");
+		fprintf(stderr, "\n");
+	}
 	if ((r=libusb_bulk_transfer(ptdev->h, 0x02, data, (int)len, &tx, 0)) != 0) {
 		fprintf(stderr, _("write error: %s\n"), libusb_error_name(r));
 		return -1;
@@ -380,6 +386,11 @@ int ptouch_getstatus(ptouch_dev ptdev, int timeout)
 			fprintf(stderr, _("timeout (%i sec) while waiting for status response\n"), timeout);
 			return -1;
 		}
+	}
+	if (getenv("PTOUCH_TRACE")) {
+		fprintf(stderr, "RX[%d]:", tx);
+		for (int i = 0; i < tx && i < 32; ++i) fprintf(stderr, " %02x", buf[i]);
+		fprintf(stderr, "\n");
 	}
 	if (tx == 32) {
 		if (buf[0]==0x80 && buf[1]==0x20) {
