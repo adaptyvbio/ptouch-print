@@ -92,6 +92,12 @@ struct _pt_dev_info ptdevs[] = {
 	/* 5,2/9/11,2 mm HSe heat shrink tubes not tested, probably requiring extension of struct _pt_tape_info */
 	{0x04f9, 0x2201, "PT-E310BT", 128, 180, FLAG_P700_INIT|FLAG_USE_INFO_CMD|FLAG_D460BT_MAGIC},
 	{0x04f9, 0x2203, "PT-E560BT", 128, 180, FLAG_P700_INIT|FLAG_USE_INFO_CMD|FLAG_D460BT_MAGIC},
+	/* PT-E720BT — 24mm tape, 180dpi, 128px printhead. Despite being in the
+	 * E-series BT family alongside the E560BT, this generation requires the
+	 * P710BT-style protocol (PackBits-compressed raster + precut) rather than
+	 * the D460BT magic packet — verified empirically: the magic-packet flags
+	 * are silently rejected by the print engine, the PackBits flags work. */
+	{0x04f9, 0x224a, "PT-E720BT", 128, 180, FLAG_RASTER_PACKBITS|FLAG_P700_INIT|FLAG_HAS_PRECUT},
 	{0,0,"",0,0,0}
 };
 
