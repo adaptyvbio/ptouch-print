@@ -26,3 +26,4 @@ SUBSYSTEM == "usb", ATTRS{idVendor} == "04f9", ATTRS{idProduct} == "20e0", MODE=
 SUBSYSTEM == "usb", ATTRS{idVendor} == "04f9", ATTRS{idProduct} == "20e1", MODE="0660", TAG+="uaccess"
 SUBSYSTEM == "usb", ATTRS{idVendor} == "04f9", ATTRS{idProduct} == "2201", MODE="0660", TAG+="uaccess"
 SUBSYSTEM == "usb", ATTRS{idVendor} == "04f9", ATTRS{idProduct} == "2203", MODE="0660", TAG+="uaccess"
+SUBSYSTEM == "usb", ATTRS{idVendor} == "04f9", ATTRS{idProduct} == "224a", MODE="0660", TAG+="uaccess"

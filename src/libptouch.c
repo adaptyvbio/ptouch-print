@@ -92,6 +92,12 @@ struct _pt_dev_info ptdevs[] = {
 	/* 5,2/9/11,2 mm HSe heat shrink tubes not tested, probably requiring extension of struct _pt_tape_info */
 	{0x04f9, 0x2201, "PT-E310BT", 128, 180, FLAG_P700_INIT|FLAG_USE_INFO_CMD|FLAG_D460BT_MAGIC},
 	{0x04f9, 0x2203, "PT-E560BT", 128, 180, FLAG_P700_INIT|FLAG_USE_INFO_CMD|FLAG_D460BT_MAGIC},
+	/* PT-E720BT — 24mm tape, 180dpi, 128px printhead. Despite being in the
+	 * E-series BT family alongside the E560BT, this generation requires the
+	 * P710BT-style protocol (PackBits-compressed raster + precut) rather than
+	 * the D460BT magic packet — verified empirically: the magic-packet flags
+	 * are silently rejected by the print engine, the PackBits flags work. */
+	{0x04f9, 0x224a, "PT-E720BT", 128, 180, FLAG_RASTER_PACKBITS|FLAG_P700_INIT|FLAG_HAS_PRECUT},
 	{0,0,"",0,0,0}
 };
 
@@ -193,6 +199,12 @@ int ptouch_send(ptouch_dev ptdev, uint8_t *data, size_t len)
 	}
 	if (len > 128) {
 		return -1;
+	}
+	if (getenv("PTOUCH_TRACE")) {
+		fprintf(stderr, "TX[%zu]:", len);
+		for (size_t i = 0; i < len && i < 32; ++i) fprintf(stderr, " %02x", data[i]);
+		if (len > 32) fprintf(stderr, " ...");
+		fprintf(stderr, "\n");
 	}
 	if ((r=libusb_bulk_transfer(ptdev->h, 0x02, data, (int)len, &tx, 0)) != 0) {
 		fprintf(stderr, _("write error: %s\n"), libusb_error_name(r));
@@ -374,6 +386,11 @@ int ptouch_getstatus(ptouch_dev ptdev, int timeout)
 			fprintf(stderr, _("timeout (%i sec) while waiting for status response\n"), timeout);
 			return -1;
 		}
+	}
+	if (getenv("PTOUCH_TRACE")) {
+		fprintf(stderr, "RX[%d]:", tx);
+		for (int i = 0; i < tx && i < 32; ++i) fprintf(stderr, " %02x", buf[i]);
+		fprintf(stderr, "\n");
 	}
 	if (tx == 32) {
 		if (buf[0]==0x80 && buf[1]==0x20) {
