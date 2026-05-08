@@ -127,6 +127,15 @@ int ptouch_open(ptouch_dev *ptdev)
 		return -1;
 	}
 //	libusb_set_debug(NULL, 3);
+	/* Optional VID/PID filter via env. Lets a multi-printer host (e.g. a
+	 * Pi with both a PT-D610BT and a PT-E720BT attached) route a job to a
+	 * specific printer without a CLI flag — set PTOUCH_VID and/or
+	 * PTOUCH_PID to hex strings (e.g. "04f9", "224a"). Either may be left
+	 * unset to match all values for that field. */
+	const char *want_vid_str = getenv("PTOUCH_VID");
+	const char *want_pid_str = getenv("PTOUCH_PID");
+	unsigned long want_vid = want_vid_str ? strtoul(want_vid_str, NULL, 16) : 0UL;
+	unsigned long want_pid = want_pid_str ? strtoul(want_pid_str, NULL, 16) : 0UL;
 	if ((cnt=libusb_get_device_list(NULL, &devs)) < 0) {
 		return -1;
 	}
@@ -136,6 +145,8 @@ int ptouch_open(ptouch_dev *ptdev)
 			libusb_free_device_list(devs, 1);
 			return -1;
 		}
+		if (want_vid && desc.idVendor != want_vid) continue;
+		if (want_pid && desc.idProduct != want_pid) continue;
 		for (int k=0; ptdevs[k].vid > 0; ++k) {
 			if ((desc.idVendor == ptdevs[k].vid) && (desc.idProduct == ptdevs[k].pid) && (ptdevs[k].flags >= 0)) {
 				fprintf(stderr, _("%s found on USB bus %d, device %d\n"),

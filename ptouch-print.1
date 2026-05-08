@@ -120,6 +120,22 @@ and 'World' in the second line).
 Print the image contained in the PNG image file 'icon.png'.
 The image file must be palette based PNG format with two colors.
 
+.SH ENVIRONMENT
+.TP
+.B PTOUCH_VID
+Hex USB vendor ID (e.g. \fI04f9\fR). When set, only USB devices with this
+vendor ID are considered. Useful when multiple ptouch-print\-supported
+printers are attached to the same host and a job needs to target a
+specific one.
+.TP
+.B PTOUCH_PID
+Hex USB product ID (e.g. \fI224a\fR for PT-E720BT). Combined with
+\fBPTOUCH_VID\fR to pin to a specific printer model. Either may be set
+independently.
+.TP
+.B PTOUCH_TRACE
+When set, hex-dump all USB traffic to/from the printer to stderr (debugging).
+
 .SH AUTHOR
 Written by Dominic Radermacher (dominic@familie-radermacher.ch).
 
